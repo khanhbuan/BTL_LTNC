@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1647959186 source:c:\users\nxbgdvn\documents\btl_project\init.cpp
+	"init.h"
+	<iostream>
+	<SDL_image.h>
+	<SDL.h>
+
+1647959151 c:\users\nxbgdvn\documents\btl_project\init.h
+	<iostream>
+	<SDL.h>
+
+1647959230 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+
+1647960912 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
+	<iostream>
+	<SDL.h>
+	<thread>
+	<chrono>
+	"init.h"
+	"load_img.h"
+
+1647959209 c:\users\nxbgdvn\documents\btl_project\load_img.h
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+
