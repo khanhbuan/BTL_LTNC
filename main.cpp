@@ -1,7 +1,11 @@
 #include<iostream>
 #include<SDL.h>
+#include<SDL_image.h>
+#include<SDL_ttf.h>
 #include<thread>
 #include<chrono>
+#include "load_text.h"
+#include "game_continue.h"
 #include "init.h"
 #include "load_img.h"
 using namespace std;
@@ -29,10 +33,6 @@ void trap_run(SDL_Rect &rect, SDL_Renderer* &renderer, SDL_Texture* &character) 
 void draw_ground(SDL_Renderer* &renderer) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT/2 + height, SCREEN_WIDTH, SCREEN_HEIGHT/2 + height);
-}
-
-void check_game_state(bool &game_continue, SDL_Rect &rect1, SDL_Rect &rect2) {
-
 }
 
 int main(int argc, char* argv[]) {
@@ -68,8 +68,9 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
 
     bool game_continue = 1;
+
     while(game_continue) {
-        check = 0;
+        check = false;
         SDL_PollEvent(&event);
         if(event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) break;
 
@@ -81,14 +82,14 @@ int main(int argc, char* argv[]) {
         //draw the ground
         draw_ground(renderer);
         SDL_RenderPresent(renderer);
-
+        if(!check_game_continue(rect, rect2)) game_continue = 0;
         if(event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
                 case SDLK_SPACE:
-                    check = 1;
+                    check = true;
                     break;
                 case SDLK_UP:
-                    check = 1;
+                    check = true;
                     break;
             }
             if(check) {
@@ -99,8 +100,12 @@ int main(int argc, char* argv[]) {
                     trap_run(rect2, renderer, trap);
                     draw_ground(renderer);
                     SDL_RenderPresent(renderer);
+                    if(check_game_continue(rect, rect2) == false) {
+                        game_continue = false;
+                        break;
+                    }
                 }
-
+                if(game_continue == false) break;
                 for(int i = 0 ; i <= JUMP_HEIGHT / JUMP_STEP ; i++) {
                     clear_renderer(renderer);
                     rect.y += JUMP_STEP;
@@ -108,6 +113,10 @@ int main(int argc, char* argv[]) {
                     trap_run(rect2, renderer, trap);
                     draw_ground(renderer);
                     SDL_RenderPresent(renderer);
+                    if(check_game_continue(rect, rect2) == false) {
+                        game_continue = false;
+                        break;
+                    }
                 }
             }
         }

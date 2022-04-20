@@ -32,6 +32,8 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="game_continue.cpp" />
+		<Unit filename="game_continue.h" />
 		<Unit filename="init.cpp" />
 		<Unit filename="init.h" />
 		<Unit filename="load_img.cpp" />
