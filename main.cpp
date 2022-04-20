@@ -4,7 +4,6 @@
 #include<SDL_ttf.h>
 #include<thread>
 #include<chrono>
-#include "load_text.h"
 #include "game_continue.h"
 #include "init.h"
 #include "load_img.h"
@@ -18,6 +17,8 @@ const int JUMP_STEP = 5;
 const int BACK_STEP = 5;
 const int height = 34;
 const string WINDOW_TITLE = "An Implementation of DINO";
+const string text = "GAME OVER!";
+const SDL_Color textColor = {0, 0, 0};
 
 void clear_renderer(SDL_Renderer* &renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
@@ -66,23 +67,24 @@ int main(int argc, char* argv[]) {
     SDL_RenderPresent(renderer);
 
     SDL_Event event;
+    bool game_lose = false;
 
-    bool game_continue = 1;
-
-    while(game_continue) {
+    while(true) {
         check = false;
         SDL_PollEvent(&event);
         if(event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) break;
 
         clear_renderer(renderer);
-        //character
         SDL_RenderCopy(renderer, character, NULL, &rect);
-        //trap run
         trap_run(rect2, renderer, trap);
-        //draw the ground
         draw_ground(renderer);
         SDL_RenderPresent(renderer);
-        if(!check_game_continue(rect, rect2)) game_continue = 0;
+
+        if(check_game_continue(rect, rect2) == false) {
+            game_lose = true;
+            break;
+        }
+
         if(event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
                 case SDLK_SPACE:
@@ -101,11 +103,11 @@ int main(int argc, char* argv[]) {
                     draw_ground(renderer);
                     SDL_RenderPresent(renderer);
                     if(check_game_continue(rect, rect2) == false) {
-                        game_continue = false;
+                        game_lose = true;
                         break;
                     }
                 }
-                if(game_continue == false) break;
+                if(game_lose == true) break;
                 for(int i = 0 ; i <= JUMP_HEIGHT / JUMP_STEP ; i++) {
                     clear_renderer(renderer);
                     rect.y += JUMP_STEP;
@@ -114,12 +116,28 @@ int main(int argc, char* argv[]) {
                     draw_ground(renderer);
                     SDL_RenderPresent(renderer);
                     if(check_game_continue(rect, rect2) == false) {
-                        game_continue = false;
+                        game_lose = true;
                         break;
                     }
                 }
+                if(game_lose == true) break;
             }
         }
+    }
+    if(game_lose == true) {
+        clear_renderer(renderer);
+        if(TTF_Init() == -1) printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+        TTF_Font *gFont = NULL;
+        gFont = TTF_OpenFont("Lato-Light.ttf", 30);
+        SDL_Texture *ending = loadText(gFont, renderer, text, textColor);
+        SDL_Rect banner;
+        banner.x = SCREEN_WIDTH/3;
+        banner.y = SCREEN_HEIGHT/3;
+        banner.w = SCREEN_WIDTH/3;
+        banner.h = SCREEN_HEIGHT/3;
+        SDL_RenderCopy(renderer, ending, NULL, &banner);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(1000);
     }
     quitSDL(window, renderer);
     return 0;
