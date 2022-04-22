@@ -10,20 +10,19 @@
 	<iostream>
 	<SDL.h>
 
-1650452474 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
+1650558414 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_ttf.h>
 	<SDL_image.h>
 
-1650469268 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
+1650643638 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_ttf.h>
 	<thread>
 	<chrono>
-	"game_continue.h"
 	"init.h"
 	"load_img.h"
 
