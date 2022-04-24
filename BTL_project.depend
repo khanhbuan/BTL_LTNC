@@ -10,14 +10,14 @@
 	<iostream>
 	<SDL.h>
 
-1650558414 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
+1650683710 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_ttf.h>
 	<SDL_image.h>
 
-1650643638 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
-	<iostream>
+1650806753 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
+	<bits/stdc++.h>
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_ttf.h>
