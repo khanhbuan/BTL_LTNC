@@ -30,10 +30,13 @@ void clear_renderer(SDL_Renderer* &renderer) {
     SDL_RenderClear(renderer);
 }
 
-void trap_run(SDL_Rect &rect, SDL_Renderer* &renderer, SDL_Texture* &character) {
+void trap_run(SDL_Rect &rect, SDL_Renderer* &renderer, SDL_Texture* &character, bool &random_check) {
     rect.x -= BACK_STEP;
-    if(rect.x <= BACK_STEP) rect.x = SCREEN_WIDTH - rect.w;
     SDL_RenderCopy(renderer, character, NULL, &rect);
+    if(rect.x <= BACK_STEP) {
+        rect.x = SCREEN_WIDTH - rect.w;
+        random_check = true;
+    }
 }
 
 void draw_ground(SDL_Renderer* &renderer) {
@@ -63,6 +66,7 @@ string add(string &s, string &s2) {
 }
 
 int main(int argc, char* argv[]) {
+    srand(time(0));
     SDL_Window* window;
     SDL_Renderer* renderer;
     initSDL(window, renderer);
@@ -82,17 +86,20 @@ int main(int argc, char* argv[]) {
     SDL_Texture *point = NULL;
     SDL_Texture* character = loadTexture("dino.png", renderer);
     SDL_Texture* trap = loadTexture("cactus1.png", renderer);
+    SDL_Texture* trap2 = loadTexture("cactus2.png", renderer);
     SDL_Texture *ending = loadText(gFont2, renderer, text, blue);
     SDL_Texture *instruct2 = loadText(gFont2, renderer, q_press, blue);
 
-    bool main_back, game_lose, re_play, check;
+    bool main_back, game_lose, re_play, check, random_check;
     SDL_Event e, event;
     string s, s2;
+    int random_val;
 
     do {
         re_play = false;
         main_back = false;
         game_lose = false;
+        random_check = true;
 
         set_side(space, 0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
         set_side(start_banner, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/8, SCREEN_WIDTH/8);
@@ -155,7 +162,12 @@ int main(int argc, char* argv[]) {
         rect2.x = SCREEN_WIDTH - rect2.w;
         rect2.y = SCREEN_HEIGHT/2;
 
-        SDL_RenderCopy(renderer, trap, NULL, &rect2);
+        if(random_check == true) {
+            random_val = rand() % 2;
+            if(random_val == 0) SDL_RenderCopy(renderer, trap, NULL, &rect2);
+            else SDL_RenderCopy(renderer, trap2, NULL, &rect2);
+            random_check = false;
+        }
         draw_ground(renderer);
 
         SDL_RenderPresent(renderer);
@@ -175,7 +187,14 @@ int main(int argc, char* argv[]) {
             clear_renderer(renderer);
             SDL_RenderCopy(renderer, point, NULL, &point_banner);
             SDL_RenderCopy(renderer, character, NULL, &rect);
-            trap_run(rect2, renderer, trap);
+
+            if(random_check == true) {
+                random_val = rand() % 2;
+                random_check = false;
+            }
+            if(random_val == 0) trap_run(rect2, renderer, trap, random_check);
+            else trap_run(rect2, renderer, trap2, random_check);
+
             draw_ground(renderer);
             SDL_RenderPresent(renderer);
 
@@ -192,7 +211,13 @@ int main(int argc, char* argv[]) {
                         clear_renderer(renderer);
                         rect.y -= JUMP_STEP;
                         SDL_RenderCopy(renderer, character, NULL, &rect);
-                        trap_run(rect2, renderer, trap);
+
+                        if(random_check == true) {
+                            random_val = rand() % 2;
+                            random_check = false;
+                        }
+                        if(random_val == 0) trap_run(rect2, renderer, trap, random_check);
+                        else trap_run(rect2, renderer, trap2, random_check);
                         draw_ground(renderer);
 
                         s = add(s, s2);
@@ -216,7 +241,14 @@ int main(int argc, char* argv[]) {
                         SDL_RenderCopy(renderer, point, NULL, &point_banner);
 
                         SDL_RenderCopy(renderer, character, NULL, &rect);
-                        trap_run(rect2, renderer, trap);
+
+                        if(random_check == true) {
+                            random_val = rand() % 2;
+                            random_check = false;
+                        }
+                        if(random_val == 0) trap_run(rect2, renderer, trap, random_check);
+                        else trap_run(rect2, renderer, trap2, random_check);
+
                         draw_ground(renderer);
                         SDL_RenderPresent(renderer);
                         if(SDL_HasIntersection(&rect, &rect2) == SDL_TRUE) {
@@ -234,7 +266,7 @@ int main(int argc, char* argv[]) {
             point = loadText(gFont2, renderer, "Your final score: " + s, blue);
             set_side(point_banner, SCREEN_WIDTH/3, SCREEN_HEIGHT/2, SCREEN_HEIGHT/6, SCREEN_WIDTH/3);
             set_side(start_banner, 5*SCREEN_WIDTH/12, SCREEN_HEIGHT/3, SCREEN_HEIGHT/6, SCREEN_WIDTH/6);
-            set_side(back_press, SCREEN_WIDTH/6, 2*SCREEN_HEIGHT/3, SCREEN_HEIGHT/6, 2*SCREEN_WIDTH/3);
+            set_side(back_press, SCREEN_WIDTH/6, 2*SCREEN_HEIGHT/3, SCREEN_HEIGHT/7, 2*SCREEN_WIDTH/3);
 
             SDL_RenderCopy(renderer, background, NULL, &space);
             SDL_RenderCopy(renderer, point, NULL, &point_banner);
