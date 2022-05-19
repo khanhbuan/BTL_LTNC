@@ -1,14 +1,16 @@
 # depslib dependency file v1.0
-1650468892 source:c:\users\nxbgdvn\documents\btl_project\init.cpp
+1652926428 source:c:\users\nxbgdvn\documents\btl_project\init.cpp
 	"init.h"
+	"load_img.h"
 	<iostream>
-	<SDL_image.h>
 	<SDL_ttf.h>
+	<SDL_image.h>
 	<SDL.h>
 
-1650146690 c:\users\nxbgdvn\documents\btl_project\init.h
+1652926399 c:\users\nxbgdvn\documents\btl_project\init.h
 	<iostream>
 	<SDL.h>
+	<SDL_ttf.h>
 
 1650683710 source:c:\users\nxbgdvn\documents\btl_project\load_img.cpp
 	<iostream>
@@ -16,15 +18,14 @@
 	<SDL_ttf.h>
 	<SDL_image.h>
 
-1650985014 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
+1652890868 source:c:\users\nxbgdvn\documents\btl_project\main.cpp
 	<bits/stdc++.h>
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_ttf.h>
-	<thread>
-	<chrono>
 	"init.h"
 	"load_img.h"
+	"state.h"
 
 1650446215 c:\users\nxbgdvn\documents\btl_project\load_img.h
 	<iostream>
@@ -83,4 +84,14 @@
 	"load_text.h"
 	<SDL.h>
 	<SDL_image.h>
+
+1652888924 c:\users\nxbgdvn\documents\btl_project\state.h
+	<iostream>
+	<SDL.h>
+	<SDL_ttf.h>
+
+1652888915 source:c:\users\nxbgdvn\documents\btl_project\state.cpp
+	<bits/stdc++.h>
+	"state.h"
+	"load_img.h"
 
