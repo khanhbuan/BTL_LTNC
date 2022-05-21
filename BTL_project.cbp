@@ -33,7 +33,6 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="Freedom-10eM.ttf" />
-		<Unit filename="Lato-Light.ttf" />
 		<Unit filename="Lato-Semibold.ttf" />
 		<Unit filename="init.cpp" />
 		<Unit filename="init.h" />

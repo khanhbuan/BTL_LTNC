@@ -4,20 +4,15 @@
 #include<SDL_ttf.h>
 #include "init.h"
 #include "load_img.h"
-#include "state.h"
 using namespace std;
 
 int BACK_STEP = 5;
-bool main_back, game_lose, re_play, check, random_check, buff, was_collision;
-int random_val;
-SDL_Rect space, start_banner, welcome_banner, help_banner, instruct_banner, back_banner, point_banner, back_press, rect_shield;
-SDL_Rect char_rect[2], trap_rect;
+bool main_back, game_lose, re_play, check, random_check, buff, was_collision, random_stone;
+int random_val1, random_val2;
+SDL_Rect space, start_banner, welcome_banner, help_banner;
+SDL_Rect instruct_banner, back_banner, point_banner, back_press, rect_shield, pause_rect, pause_screen, getback_screen;
+SDL_Rect char_rect[2], trap_rect, stone_rect;
 SDL_Texture *character[3], *trap[4];
-
-void draw_ground(SDL_Renderer* &renderer) {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT/2 + height, SCREEN_WIDTH, SCREEN_HEIGHT/2 + height);
-}
 
 void update_point(SDL_Renderer* &renderer, TTF_Font* &gFont2, string &s, string &s2, SDL_Texture* &point, int &BACK_STEP) {
     s = add(s, s2);
@@ -27,12 +22,23 @@ void update_point(SDL_Renderer* &renderer, TTF_Font* &gFont2, string &s, string 
 
 void random_trap(SDL_Renderer* &renderer, SDL_Rect &trap_rect, SDL_Texture* trap[3]) {
     if(random_check == true) {
-        random_val = rand() % 5;
+        random_val1 = rand() % 6;
         random_check = false;
     }
-    if(random_val % 2 == 0) SDL_RenderCopy(renderer, trap[0], NULL, &trap_rect);
-    else if(random_val % 2 == 1 && random_val != 3) SDL_RenderCopy(renderer, trap[1], NULL, &trap_rect);
-    else if(random_val == 3) SDL_RenderCopy(renderer, trap[2], NULL, &trap_rect);
+    if(random_val1 == 0 || random_val1 == 1) SDL_RenderCopy(renderer, trap[0], NULL, &trap_rect);
+    else if(random_val1 == 2 || random_val1 == 3) SDL_RenderCopy(renderer, trap[1], NULL, &trap_rect);
+    else SDL_RenderCopy(renderer, trap[2], NULL, &rect_shield);
+}
+
+void falling_stone(SDL_Renderer* &renderer, SDL_Rect &stone_rect, SDL_Texture* &stone, bool &random_stone) {
+    stone_rect.x -= 3;
+    stone_rect.y += 3;
+    SDL_RenderCopy(renderer, stone, NULL, &stone_rect);
+    if(stone_rect.y >= SCREEN_HEIGHT/2 + height - stone_rect.h/2) {
+        random_stone = true;
+        stone_rect.x = rand() % 300 + 300;
+        stone_rect.y = 0;
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -42,12 +48,13 @@ int main(int argc, char* argv[]) {
     initSDL(window, renderer);
 
     if(TTF_Init() == -1) printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
-    TTF_Font *gFont = TTF_OpenFont("Freedom-10eM.ttf", 40), *gFont2 = TTF_OpenFont("Lato-Semibold.ttf", 40);
+    TTF_Font *gFont = TTF_OpenFont("Pixelletters-RLm3.ttf", 40), *gFont2 = TTF_OpenFont("Lato-Semibold.ttf", 40);
 
     SDL_Texture *background = loadTexture("desert.jpg", renderer);
     SDL_Texture *background2 = loadTexture("background2.jpg", renderer);
     SDL_Texture *instruct = loadTexture("instruct.png", renderer);
-
+    SDL_Texture *pause = loadTexture("pause.png", renderer);
+    SDL_Texture* stone = loadTexture("stone1.png", renderer);
     setTexture(renderer, character, trap);
 
     SDL_Texture *point = NULL;
@@ -57,6 +64,8 @@ int main(int argc, char* argv[]) {
     SDL_Texture *ending = loadText(gFont, renderer, text, blue);
     SDL_Texture *getback = loadText(gFont, renderer, get_back, blue);
     SDL_Texture *instruct2 = loadText(gFont2, renderer, q_press, blue);
+    SDL_Texture *rest = loadText(gFont, renderer, pause_game, black);
+    SDL_Texture *comeback = loadText(gFont, renderer, come_back, black);
 
     SDL_Event e, event;
     string s, s2;
@@ -68,15 +77,24 @@ int main(int argc, char* argv[]) {
         random_check = true;
         buff = false;
         was_collision = false;
+        random_stone = true;
         BACK_STEP = 5;
 
         set_side(space, 0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
-        set_side(start_banner, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/8, SCREEN_WIDTH/8);
-        set_side(welcome_banner, SCREEN_WIDTH/4, SCREEN_HEIGHT/8, SCREEN_HEIGHT/5, SCREEN_WIDTH/2);
-        set_side(help_banner, 7*SCREEN_WIDTH/16, 9*SCREEN_HEIGHT/16, SCREEN_HEIGHT/8, SCREEN_WIDTH/8);
+        set_side(start_banner, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
+        set_side(welcome_banner, SCREEN_WIDTH/4, SCREEN_HEIGHT/8, SCREEN_HEIGHT/7, SCREEN_WIDTH/2);
+        set_side(help_banner, 7*SCREEN_WIDTH/16, 9*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
         set_side(instruct_banner, 0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
         set_side(back_banner, 0, 0, 50, 50);
         set_side(point_banner, 2*SCREEN_WIDTH/3, 100, 20, 100);
+        set_side(pause_rect, 0, 0, 20, 20);
+        set_side(pause_screen, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
+        set_side(getback_screen, 7*SCREEN_WIDTH/16, 9*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
+        SDL_QueryTexture(stone, NULL, NULL, &stone_rect.w, &stone_rect.h);
+        stone_rect.x = 300;
+        stone_rect.y = 0;
+        stone_rect.w = 2*stone_rect.w / 3;
+        stone_rect.h = 2*stone_rect.h / 3;
 
         SDL_RenderCopy(renderer, background, NULL, &space);
         SDL_RenderCopy(renderer, start, NULL, &start_banner);
@@ -91,11 +109,13 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             if(e.type == SDL_MOUSEBUTTONDOWN) {
-                if(main_back == false && start_banner.x < e.button.x && e.button.x < start_banner.x + start_banner.w) {
-                    if(start_banner.y < e.button.y && e.button.y < start_banner.y + start_banner.h) break;
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                if(main_back == false && start_banner.x < x && x < start_banner.x + start_banner.w) {
+                    if(start_banner.y < y && y < start_banner.y + start_banner.h) break;
                 }
                 if(main_back == true) {
-                    if(0 < e.button.x && e.button.x < 50 && 0 < e.button.y && e.button.y < 50) {
+                    if(0 < x && x < 50 && 0 < y && y < 50) {
                         SDL_RenderClear(renderer);
                         SDL_RenderCopy(renderer, background, NULL, &space);
                         SDL_RenderCopy(renderer, start, NULL, &start_banner);
@@ -106,8 +126,8 @@ int main(int argc, char* argv[]) {
                         continue;
                     }
                 }
-                if(help_banner.x < e.button.x && e.button.x < help_banner.x + help_banner.w) {
-                    if(help_banner.y < e.button.y && e.button.y < help_banner.y + help_banner.h) {
+                if(help_banner.x < x && x < help_banner.x + help_banner.w) {
+                    if(help_banner.y < y && y < help_banner.y + help_banner.h) {
                         clear_renderer(renderer);
                         SDL_RenderCopy(renderer, background, NULL, &space);
                         SDL_RenderCopy(renderer, getback, NULL, &back_banner);
@@ -150,7 +170,7 @@ int main(int argc, char* argv[]) {
         while(true) {
             check = false;
             SDL_PollEvent(&event);
-            if(event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
+            if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
                 quitSDL(window, renderer);
                 return 0;
             }
@@ -159,30 +179,67 @@ int main(int argc, char* argv[]) {
             clear_renderer(renderer);
             SDL_RenderCopy(renderer, background2, NULL, &space);
             SDL_RenderCopy(renderer, point, NULL, &point_banner);
-
+            SDL_RenderCopy(renderer, pause, NULL, &pause_rect);
             SDL_RenderCopy(renderer, character[int(buff)], NULL, &char_rect[int(buff)]);
+            draw_ground(renderer);
+
+            if(event.type == SDL_MOUSEBUTTONDOWN) {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                if(0 < x && x < 50 && 0 < y && y < 50) {
+                    while(true) {
+                        clear_renderer(renderer);
+                        SDL_RenderCopy(renderer, rest, NULL, &pause_screen);
+                        SDL_RenderCopy(renderer, comeback, NULL, &getback_screen);
+                        SDL_RenderPresent(renderer);
+                        SDL_PollEvent(&event);
+                        if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+                            quitSDL(window, renderer);
+                            return 0;
+                        }
+                        if(event.type == SDL_MOUSEBUTTONDOWN) {
+                            SDL_GetMouseState(&x, &y);
+                            if(getback_screen.x < x && x < getback_screen.x + getback_screen.w) {
+                                if(getback_screen.y < y && y < getback_screen.y + getback_screen.h) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             if(random_check == true) {
-                random_val = rand() % 6;
+                random_val1 = rand() % 6;
                 random_check = false;
             }
-            if(random_val % 3 ==  0) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
-            else if(random_val % 3 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
-            else if(random_val % 3 == 2) trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
+            if(random_val1 == 0 || random_val1 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
+            else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
+            else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
 
-            draw_ground(renderer);
+            if(random_stone == true) {
+                random_val2 = rand() % 20;
+                random_stone = false;
+            }
+            if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+            else random_stone = true;
+
             SDL_RenderPresent(renderer);
-            if(was_collision == true && trap_rect.w + trap_rect.x < char_rect[0].x) {
+
+            if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
                 buff = false;
                 was_collision = false;
             }
-            if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) {
+            if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                 if(buff == false) {
                     SDL_Delay(500);
                     game_lose = true;
                     break;
                 }
-                else was_collision = true;
+                else {
+                    if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
+                    was_collision = true;
+                }
             }
             if(SDL_HasIntersection(&rect_shield, &char_rect[0]) == SDL_TRUE || SDL_HasIntersection(&rect_shield, &char_rect[1]) == SDL_TRUE) buff = true;
 
@@ -190,21 +247,55 @@ int main(int argc, char* argv[]) {
                 if(event.key.keysym.sym == SDLK_SPACE) check = true;
                 if(check) {
                     for(int i = 0 ; i <= JUMP_HEIGHT / JUMP_STEP ; i++) {
+                        SDL_PollEvent(&event);
+                        if(event.type == SDL_MOUSEBUTTONDOWN) {
+                            int x, y;
+                            SDL_GetMouseState(&x, &y);
+                            if(0 < x && x < 50 && 0 < y && y < 50) {
+                                while(true) {
+                                    clear_renderer(renderer);
+                                    SDL_RenderCopy(renderer, rest, NULL, &pause_screen);
+                                    SDL_RenderCopy(renderer, comeback, NULL, &getback_screen);
+                                    SDL_RenderPresent(renderer);
+                                    SDL_PollEvent(&event);
+                                    if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+                                        quitSDL(window, renderer);
+                                        return 0;
+                                    }
+                                    if(event.type == SDL_MOUSEBUTTONDOWN) {
+                                        SDL_GetMouseState(&x, &y);
+                                        if(getback_screen.x < x && x < getback_screen.x + getback_screen.w) {
+                                            if(getback_screen.y < y && y < getback_screen.y + getback_screen.h) {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         clear_renderer(renderer);
                         char_rect[0].y -= JUMP_STEP;
                         char_rect[1].y -= JUMP_STEP;
 
                         SDL_RenderCopy(renderer, background2, NULL, &space);
+                        SDL_RenderCopy(renderer, pause, NULL, &pause_rect);
 
                         SDL_RenderCopy(renderer, character[int(buff)], NULL, &char_rect[int(buff)]);
 
                         if(random_check == true) {
-                            random_val = rand() % 6;
+                            random_val1 = rand() % 6;
                             random_check = false;
                         }
-                        if(random_val % 3 ==  0) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
-                        else if(random_val % 3 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
-                        else if(random_val % 3 == 2) trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
+                        if(random_val1 == 0 || random_val1 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
+                        else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
+                        else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
+
+                        if(random_stone == true) {
+                            random_val2 = rand() % 20;
+                            random_stone = false;
+                        }
+                        if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+                        else random_stone = true;
 
                         draw_ground(renderer);
 
@@ -214,23 +305,52 @@ int main(int argc, char* argv[]) {
 
                         SDL_RenderPresent(renderer);
 
-                        if(was_collision == true && trap_rect.w + trap_rect.x < char_rect[0].x) {
+                        if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
                             buff = false;
                             was_collision = false;
                         }
-                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) {
+                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                             if(buff == false) {
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;
                             }
-                            else was_collision = true;
+                            else {
+                                if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
+                                was_collision = true;
+                            }
                         }
                         if(SDL_HasIntersection(&rect_shield, &char_rect[0]) == SDL_TRUE || SDL_HasIntersection(&rect_shield, &char_rect[1]) == SDL_TRUE) buff = true;
                     }
                     if(game_lose == true) break;
 
                     for(int i = 0 ; i <= JUMP_HEIGHT / JUMP_STEP ; i++) {
+                        SDL_PollEvent(&event);
+                        if(event.type == SDL_MOUSEBUTTONDOWN) {
+                            int x, y;
+                            SDL_GetMouseState(&x, &y);
+                            if(0 < x && x < 50 && 0 < y && y < 50) {
+                                while(true) {
+                                    clear_renderer(renderer);
+                                    SDL_RenderCopy(renderer, rest, NULL, &pause_screen);
+                                    SDL_RenderCopy(renderer, comeback, NULL, &getback_screen);
+                                    SDL_RenderPresent(renderer);
+                                    SDL_PollEvent(&event);
+                                    if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+                                        quitSDL(window, renderer);
+                                        return 0;
+                                    }
+                                    if(event.type == SDL_MOUSEBUTTONDOWN) {
+                                        SDL_GetMouseState(&x, &y);
+                                        if(getback_screen.x < x && x < getback_screen.x + getback_screen.w) {
+                                            if(getback_screen.y < y && y < getback_screen.y + getback_screen.h) {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         clear_renderer(renderer);
                         char_rect[0].y += JUMP_STEP;
                         char_rect[1].y += JUMP_STEP;
@@ -238,32 +358,43 @@ int main(int argc, char* argv[]) {
                         update_point(renderer, gFont2, s, s2, point, BACK_STEP);
 
                         SDL_RenderCopy(renderer, background2, NULL, &space);
+                        SDL_RenderCopy(renderer, pause, NULL, &pause_rect);
                         SDL_RenderCopy(renderer, point, NULL, &point_banner);
 
                         SDL_RenderCopy(renderer, character[int(buff)], NULL, &char_rect[int(buff)]);
 
                         if(random_check == true) {
-                            random_val = rand() % 6;
+                            random_val1 = rand() % 6;
                             random_check = false;
                         }
-                        if(random_val % 3 ==  0) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
-                        else if(random_val % 3 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
-                        else if(random_val % 3 == 2) trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
+                        if(random_val1 == 0 || random_val1 == 1) trap_run(BACK_STEP, trap_rect, renderer, trap[0], random_check);
+                        else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
+                        else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
+
+                        if(random_stone == true) {
+                            random_val2 = rand() % 20;
+                            random_stone = false;
+                        }
+                        if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+                        else random_stone = true;
 
                         draw_ground(renderer);
                         SDL_RenderPresent(renderer);
 
-                        if(was_collision == true && trap_rect.w + trap_rect.x < char_rect[0].x) {
+                        if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
                             buff = false;
                             was_collision = false;
                         }
-                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) {
+                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                             if(buff == false) {
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;
                             }
-                            else was_collision = true;
+                            else {
+                                if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
+                                was_collision = true;
+                            }
                         }
                         if(SDL_HasIntersection(&rect_shield, &char_rect[0]) == SDL_TRUE || SDL_HasIntersection(&rect_shield, &char_rect[1]) == SDL_TRUE) buff = true;
                     }
@@ -275,7 +406,7 @@ int main(int argc, char* argv[]) {
             clear_renderer(renderer);
             point = loadText(gFont2, renderer, "Your final score: " + s, blue);
             set_side(point_banner, SCREEN_WIDTH/3, SCREEN_HEIGHT/2, SCREEN_HEIGHT/6, SCREEN_WIDTH/3);
-            set_side(start_banner, 5*SCREEN_WIDTH/12, SCREEN_HEIGHT/3, SCREEN_HEIGHT/6, SCREEN_WIDTH/6);
+            set_side(start_banner, 5*SCREEN_WIDTH/12, SCREEN_HEIGHT/3, SCREEN_HEIGHT/8, SCREEN_WIDTH/6);
             set_side(back_press, SCREEN_WIDTH/6, 2*SCREEN_HEIGHT/3, SCREEN_HEIGHT/7, 2*SCREEN_WIDTH/3);
 
             SDL_RenderCopy(renderer, background, NULL, &space);

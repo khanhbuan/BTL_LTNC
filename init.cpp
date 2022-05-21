@@ -102,3 +102,8 @@ void setTexture(SDL_Renderer* &renderer, SDL_Texture* character[5], SDL_Texture*
     head = "cactus", tail = ".png";
     for(int i = 0 ; i <= 2 ; i++) trap[i] = loadTexture(head + (char)(i + '0') + tail, renderer);
 }
+
+void draw_ground(SDL_Renderer* &renderer) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT/2 + height, SCREEN_WIDTH, SCREEN_HEIGHT/2 + height);
+}
