@@ -7,11 +7,11 @@
 using namespace std;
 
 int BACK_STEP = 5;
-bool main_back, game_lose, re_play, check, random_check, buff, was_collision, random_stone;
+bool main_back, game_lose, re_play, check, random_check, buff, was_collision, random_stone, hard;
 int random_val1, random_val2;
 SDL_Rect space, start_banner, welcome_banner, help_banner;
 SDL_Rect instruct_banner, back_banner, point_banner, back_press, rect_shield, pause_rect, pause_screen, getback_screen;
-SDL_Rect char_rect[2], trap_rect, stone_rect;
+SDL_Rect char_rect[2], trap_rect, stone_rect, mode[2];
 SDL_Texture *character[3], *trap[4];
 
 void update_point(SDL_Renderer* &renderer, TTF_Font* &gFont2, string &s, string &s2, SDL_Texture* &point, int &BACK_STEP) {
@@ -28,17 +28,6 @@ void random_trap(SDL_Renderer* &renderer, SDL_Rect &trap_rect, SDL_Texture* trap
     if(random_val1 == 0 || random_val1 == 1) SDL_RenderCopy(renderer, trap[0], NULL, &trap_rect);
     else if(random_val1 == 2 || random_val1 == 3) SDL_RenderCopy(renderer, trap[1], NULL, &trap_rect);
     else SDL_RenderCopy(renderer, trap[2], NULL, &rect_shield);
-}
-
-void falling_stone(SDL_Renderer* &renderer, SDL_Rect &stone_rect, SDL_Texture* &stone, bool &random_stone) {
-    stone_rect.x -= 3;
-    stone_rect.y += 3;
-    SDL_RenderCopy(renderer, stone, NULL, &stone_rect);
-    if(stone_rect.y >= SCREEN_HEIGHT/2 + height - stone_rect.h/2) {
-        random_stone = true;
-        stone_rect.x = rand() % 300 + 300;
-        stone_rect.y = 0;
-    }
 }
 
 int main(int argc, char* argv[]) {
@@ -93,8 +82,8 @@ int main(int argc, char* argv[]) {
         SDL_QueryTexture(stone, NULL, NULL, &stone_rect.w, &stone_rect.h);
         stone_rect.x = 300;
         stone_rect.y = 0;
-        stone_rect.w = 2*stone_rect.w / 3;
-        stone_rect.h = 2*stone_rect.h / 3;
+        stone_rect.w = 20;
+        stone_rect.h = 20;
 
         SDL_RenderCopy(renderer, background, NULL, &space);
         SDL_RenderCopy(renderer, start, NULL, &start_banner);
@@ -138,6 +127,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+
 
         SDL_SetRenderDrawColor(renderer, 225, 225, 225, 0);
         SDL_RenderCopy(renderer, background2, NULL, &space);
@@ -226,12 +216,19 @@ int main(int argc, char* argv[]) {
 
             SDL_RenderPresent(renderer);
 
-            if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
-                buff = false;
-                was_collision = false;
+            if(was_collision == true) {
+                if(trap_rect.w + trap_rect.x < char_rect[0].x) {
+                    buff = false;
+                    was_collision = false;
+                }
+                else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                    buff = false;
+                    was_collision = false;
+                }
             }
             if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                 if(buff == false) {
+                    if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                     SDL_Delay(500);
                     game_lose = true;
                     break;
@@ -305,12 +302,19 @@ int main(int argc, char* argv[]) {
 
                         SDL_RenderPresent(renderer);
 
-                        if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
-                            buff = false;
-                            was_collision = false;
+                        if(was_collision == true) {
+                            if(trap_rect.w + trap_rect.x < char_rect[0].x) {
+                                buff = false;
+                                was_collision = false;
+                            }
+                            else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                                buff = false;
+                                was_collision = false;
+                            }
                         }
                         if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                             if(buff == false) {
+                                if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;
@@ -381,12 +385,19 @@ int main(int argc, char* argv[]) {
                         draw_ground(renderer);
                         SDL_RenderPresent(renderer);
 
-                        if(was_collision == true && (trap_rect.w + trap_rect.x < char_rect[0].x || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_FALSE)) {
-                            buff = false;
-                            was_collision = false;
+                        if(was_collision == true) {
+                            if(trap_rect.w + trap_rect.x < char_rect[0].x) {
+                                buff = false;
+                                was_collision = false;
+                            }
+                            else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                                buff = false;
+                                was_collision = false;
+                            }
                         }
                         if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
                             if(buff == false) {
+                                if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;

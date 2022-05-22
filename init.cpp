@@ -107,3 +107,14 @@ void draw_ground(SDL_Renderer* &renderer) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT/2 + height, SCREEN_WIDTH, SCREEN_HEIGHT/2 + height);
 }
+
+void falling_stone(SDL_Renderer* &renderer, SDL_Rect &stone_rect, SDL_Texture* &stone, bool &random_stone) {
+    stone_rect.x -= 2;
+    stone_rect.y += 1;
+    SDL_RenderCopy(renderer, stone, NULL, &stone_rect);
+    if(stone_rect.y >= SCREEN_HEIGHT/2 + height - stone_rect.h/2) {
+        random_stone = true;
+        stone_rect.x = rand() % 350 + 300;
+        stone_rect.y = 0;
+    }
+}

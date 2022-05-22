@@ -25,6 +25,8 @@ const string get_back = "BACK";
 const string q_press = "PRESS Q TO BACK TO MAIN MENU";
 const string pause_game = "GAME PAUSE";
 const string come_back = "CONTINUE";
+const string easy_mode = "EASY";
+const string hard_mode = "HARD";
 
 void logSDLError(std::ostream& os, const std::string &msg, bool fatal);
 
@@ -47,5 +49,7 @@ void trap_run(int &BACK_STEP, SDL_Rect &rect, SDL_Renderer* &renderer, SDL_Textu
 void setTexture(SDL_Renderer* &renderer, SDL_Texture* character[5], SDL_Texture* trap[5]);
 
 void draw_ground(SDL_Renderer* &renderer);
+
+void falling_stone(SDL_Renderer* &renderer, SDL_Rect &stone_rect, SDL_Texture* &stone, bool &random_stone);
 
 #endif // INIT_H
