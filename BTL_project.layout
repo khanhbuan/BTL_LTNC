@@ -7,21 +7,14 @@
 			<Cursor1 position="637" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="20009" topLine="156" />
-		</Cursor>
-		<Folding>
-			<Collapse line="110" />
-			<Collapse line="185" />
-			<Collapse line="251" />
-			<Collapse line="330" />
-			<Collapse line="407" />
-		</Folding>
-	</File>
 	<File name="init.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="40" topLine="84" />
+			<Cursor1 position="6463" topLine="47" />
+		</Cursor>
+	</File>
+	<File name="init.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2234" topLine="45" />
 		</Cursor>
 	</File>
 	<File name="load_img.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -29,9 +22,15 @@
 			<Cursor1 position="212" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="init.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="394" topLine="26" />
+			<Cursor1 position="8756" topLine="117" />
 		</Cursor>
+		<Folding>
+			<Collapse line="51" />
+			<Collapse line="88" />
+			<Collapse line="161" />
+			<Collapse line="233" />
+		</Folding>
 	</File>
 </CodeBlocks_layout_file>

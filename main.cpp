@@ -6,30 +6,6 @@
 #include "load_img.h"
 using namespace std;
 
-int BACK_STEP = 5;
-bool main_back, game_lose, re_play, check, random_check, buff, was_collision, random_stone, hard;
-int random_val1, random_val2;
-SDL_Rect space, start_banner, welcome_banner, help_banner;
-SDL_Rect instruct_banner, back_banner, point_banner, back_press, rect_shield, pause_rect, pause_screen, getback_screen;
-SDL_Rect char_rect[2], trap_rect, stone_rect, mode[2];
-SDL_Texture *character[3], *trap[4];
-
-void update_point(SDL_Renderer* &renderer, TTF_Font* &gFont2, string &s, string &s2, SDL_Texture* &point, int &BACK_STEP) {
-    s = add(s, s2);
-    point = loadText(gFont2, renderer, "Your score: " + s, black);
-    if(convert(s) % 1000 == 0 && convert(s) != 0) BACK_STEP = 12 * BACK_STEP / 10;
-}
-
-void random_trap(SDL_Renderer* &renderer, SDL_Rect &trap_rect, SDL_Texture* trap[3]) {
-    if(random_check == true) {
-        random_val1 = rand() % 6;
-        random_check = false;
-    }
-    if(random_val1 == 0 || random_val1 == 1) SDL_RenderCopy(renderer, trap[0], NULL, &trap_rect);
-    else if(random_val1 == 2 || random_val1 == 3) SDL_RenderCopy(renderer, trap[1], NULL, &trap_rect);
-    else SDL_RenderCopy(renderer, trap[2], NULL, &rect_shield);
-}
-
 int main(int argc, char* argv[]) {
     srand(time(0));
     SDL_Window* window;
@@ -43,7 +19,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture *background2 = loadTexture("background2.jpg", renderer);
     SDL_Texture *instruct = loadTexture("instruct.png", renderer);
     SDL_Texture *pause = loadTexture("pause.png", renderer);
-    SDL_Texture* stone = loadTexture("stone1.png", renderer);
+    SDL_Texture *stone = loadTexture("stone1.png", renderer);
     setTexture(renderer, character, trap);
 
     SDL_Texture *point = NULL;
@@ -55,35 +31,17 @@ int main(int argc, char* argv[]) {
     SDL_Texture *instruct2 = loadText(gFont2, renderer, q_press, blue);
     SDL_Texture *rest = loadText(gFont, renderer, pause_game, black);
     SDL_Texture *comeback = loadText(gFont, renderer, come_back, black);
+    SDL_Texture *easy_button = loadText(gFont, renderer, easy_mode, black);
+    SDL_Texture *hard_button = loadText(gFont, renderer, hard_mode, black);
 
     SDL_Event e, event;
     string s, s2;
 
     do {
-        re_play = false;
-        main_back = false;
-        game_lose = false;
-        random_check = true;
-        buff = false;
-        was_collision = false;
-        random_stone = true;
+        set_bool();
         BACK_STEP = 5;
 
-        set_side(space, 0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
-        set_side(start_banner, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
-        set_side(welcome_banner, SCREEN_WIDTH/4, SCREEN_HEIGHT/8, SCREEN_HEIGHT/7, SCREEN_WIDTH/2);
-        set_side(help_banner, 7*SCREEN_WIDTH/16, 9*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
-        set_side(instruct_banner, 0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
-        set_side(back_banner, 0, 0, 50, 50);
-        set_side(point_banner, 2*SCREEN_WIDTH/3, 100, 20, 100);
-        set_side(pause_rect, 0, 0, 20, 20);
-        set_side(pause_screen, 7*SCREEN_WIDTH/16, 7*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
-        set_side(getback_screen, 7*SCREEN_WIDTH/16, 9*SCREEN_HEIGHT/16, SCREEN_HEIGHT/10, SCREEN_WIDTH/8);
-        SDL_QueryTexture(stone, NULL, NULL, &stone_rect.w, &stone_rect.h);
-        stone_rect.x = 300;
-        stone_rect.y = 0;
-        stone_rect.w = 20;
-        stone_rect.h = 20;
+        create();
 
         SDL_RenderCopy(renderer, background, NULL, &space);
         SDL_RenderCopy(renderer, start, NULL, &start_banner);
@@ -128,7 +86,35 @@ int main(int argc, char* argv[]) {
             }
         }
 
-
+        while(true) {
+            clear_renderer(renderer);
+            SDL_RenderCopy(renderer, easy_button, NULL, &mode[0]);
+            SDL_RenderCopy(renderer, hard_button, NULL, &mode[1]);
+            SDL_RenderPresent(renderer);
+            SDL_PollEvent(&event);
+            if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+                quitSDL(window, renderer);
+                return 0;
+            }
+            if(event.type == SDL_MOUSEBUTTONDOWN) {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                if(mode[0].x < x && x < mode[0].x + mode[0].w) {
+                    if(mode[0].y < y && y < mode[0].y + mode[0].h) {
+                        hard = false;
+                        clear_renderer(renderer);
+                        break;
+                    }
+                }
+                if(mode[1].x < x && x < mode[1].x + mode[1].w) {
+                    if(mode[1].y < y && y < mode[1].y + mode[1].h) {
+                        hard = true;
+                        clear_renderer(renderer);
+                        break;
+                    }
+                }
+            }
+        }
         SDL_SetRenderDrawColor(renderer, 225, 225, 225, 0);
         SDL_RenderCopy(renderer, background2, NULL, &space);
         //load dino
@@ -207,12 +193,14 @@ int main(int argc, char* argv[]) {
             else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
             else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
 
-            if(random_stone == true) {
-                random_val2 = rand() % 20;
-                random_stone = false;
+            if(hard == true) {
+                if(random_stone == true) {
+                    random_val2 = rand() % 6;
+                    random_stone = false;
+                }
+                if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+                else random_stone = true;
             }
-            if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
-            else random_stone = true;
 
             SDL_RenderPresent(renderer);
 
@@ -221,20 +209,18 @@ int main(int argc, char* argv[]) {
                     buff = false;
                     was_collision = false;
                 }
-                else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                else if(hard == true && stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
                     buff = false;
                     was_collision = false;
                 }
             }
-            if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
+            if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || (hard == true && SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE)) {
                 if(buff == false) {
-                    if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                     SDL_Delay(500);
                     game_lose = true;
                     break;
                 }
                 else {
-                    if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
                     was_collision = true;
                 }
             }
@@ -287,12 +273,14 @@ int main(int argc, char* argv[]) {
                         else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
                         else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
 
-                        if(random_stone == true) {
-                            random_val2 = rand() % 20;
-                            random_stone = false;
+                        if(hard == true) {
+                            if(random_stone == true) {
+                                random_val2 = rand() % 6;
+                                random_stone = false;
+                            }
+                            if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+                            else random_stone = true;
                         }
-                        if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
-                        else random_stone = true;
 
                         draw_ground(renderer);
 
@@ -307,20 +295,18 @@ int main(int argc, char* argv[]) {
                                 buff = false;
                                 was_collision = false;
                             }
-                            else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                            else if(hard == true && stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
                                 buff = false;
                                 was_collision = false;
                             }
                         }
-                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
+                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || (hard == true && SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE)) {
                             if(buff == false) {
-                                if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;
                             }
                             else {
-                                if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
                                 was_collision = true;
                             }
                         }
@@ -375,12 +361,14 @@ int main(int argc, char* argv[]) {
                         else if(random_val1 == 2 || random_val1 == 3) trap_run(BACK_STEP, trap_rect, renderer, trap[1], random_check);
                         else trap_run(BACK_STEP, rect_shield, renderer, trap[2], random_check);
 
-                        if(random_stone == true) {
-                            random_val2 = rand() % 20;
-                            random_stone = false;
+                        if(hard == true) {
+                            if(random_stone == true) {
+                                random_val2 = rand() % 6;
+                                random_stone = false;
+                            }
+                            if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
+                            else random_stone = true;
                         }
-                        if(random_val2 == 1) falling_stone(renderer, stone_rect, stone, random_stone);
-                        else random_stone = true;
 
                         draw_ground(renderer);
                         SDL_RenderPresent(renderer);
@@ -390,20 +378,18 @@ int main(int argc, char* argv[]) {
                                 buff = false;
                                 was_collision = false;
                             }
-                            else if(stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
+                            else if(hard == true && stone_rect.x + stone_rect.w < char_rect[0].x && stone_rect.y + stone_rect.h > char_rect[0].y) {
                                 buff = false;
                                 was_collision = false;
                             }
                         }
-                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) {
+                        if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE || (hard == true && SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE)) {
                             if(buff == false) {
-                                if(SDL_HasIntersection(&char_rect[0], &trap_rect) == SDL_TRUE) cout << "lien" << endl;
                                 SDL_Delay(500);
                                 game_lose = true;
                                 break;
                             }
                             else {
-                                if(SDL_HasIntersection(&char_rect[0], &stone_rect) == SDL_TRUE) cout << "khanh" << endl;
                                 was_collision = true;
                             }
                         }
